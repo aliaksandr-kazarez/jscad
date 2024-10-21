@@ -11,6 +11,7 @@ export function cap({
   concaveBorder = 1,
   wallSize = MIN_WALL_SIZE,
   segments = 100,
+  center: [dx, dy, dz] = [0, 0, 0],
 }) {
   const concaveBorderRadius = radius - concaveBorder;
   const concaveCenter = Math.sqrt(
@@ -23,10 +24,10 @@ export function cap({
       segments,
       height: wallSize,
       radius,
-      center: [0, 0, wallSize / 2],
+      center: [dx, dy, dz + wallSize / 2],
     }),
     translate(
-      [0, 0, wallSize],
+      [dx, dy, dz + wallSize],
       subtract(
         cylinder({
           height: height,

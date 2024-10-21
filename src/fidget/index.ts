@@ -1,16 +1,15 @@
 import { cube } from "@jscad/modeling/src/primitives";
 import { joint } from "./joint";
 import { BASE_SIZE } from "./constants";
-import { subtract } from "@jscad/modeling/src/operations/booleans";
+import { subtract, union } from "@jscad/modeling/src/operations/booleans";
 
 export const main = () => {
   const cutTool = cube({ size: 500, center: [500 / 2, 0, 0] });
-  const [socket, ball] = joint({
-    jointRadius: BASE_SIZE,
-  });
+  const [socket, ball] = joint({});
   return [
-    subtract(socket, cutTool),
-    ball,
+    // subtract(socket, cutTool),
+    subtract(union(ball), cutTool),
+    // ball,
     // socket,
   ];
 };

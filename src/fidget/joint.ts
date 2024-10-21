@@ -1,9 +1,14 @@
 import { subtract, union } from "@jscad/modeling/src/operations/booleans";
-import { cuboid, cylinder, sphere } from "@jscad/modeling/src/primitives";
+import {
+  cuboid,
+  cylinder,
+  roundedCuboid,
+  sphere,
+} from "@jscad/modeling/src/primitives";
 import { MIN_WALL_SIZE, PRINTER_TOLERANCE } from "../constants";
 import { translate } from "@jscad/modeling/src/operations/transforms";
 import { BASE_SIZE } from "./constants";
-import { createBall } from "./ball";
+import { ball } from "./ball";
 
 function createSocketBody({ socketWidth, socketHeight, segments }) {
   const bodySphereRadius = socketWidth / 2;
@@ -28,32 +33,42 @@ function createSocketBody({ socketWidth, socketHeight, segments }) {
   return union(subtract(bodySphere, bodyCutTool), bodyCylinder);
 }
 
+function createSocketBodyCB({ socketWidth, socketHeight, segments }) {
+  return roundedCuboid({
+    size: [socketWidth, socketWidth, socketHeight],
+    roundRadius: 5,
+    segments,
+  });
+}
+
 export function joint({
-  jointTolerance = PRINTER_TOLERANCE,
-  jointRadius = BASE_SIZE,
-  jointInsertTolerance = 5,
+  ballClearance = PRINTER_TOLERANCE,
+  ballRadius = BASE_SIZE,
+  ballPressFitTolerance = 5,
   socketWall = MIN_WALL_SIZE,
   segments = 100,
-}) {
-  const ball = createBall({ jointRadius, segments });
+} = {}) {
+  const fidgetBall = ball({ radius: ballRadius, segments });
 
-  const ballTolerance = sphere({
-    radius: jointRadius + jointTolerance,
+  // отверстие во втулке, чтобы шарнир свободно вращался
+  const socketClearanceHole = sphere({
+    radius: ballRadius + ballClearance,
     segments,
   });
 
-  const socketHeight = jointRadius + socketWall + jointInsertTolerance;
-  const socketWidth = (jointRadius + socketWall) * 2;
-  const socketBody = createSocketBody({
+  const socketHeight = ballRadius + socketWall + ballPressFitTolerance;
+  const socketWidth = (ballRadius + socketWall) * 2;
+  // const socketBody = createSocketBody({
+  const socketBody = createSocketBodyCB({
     socketWidth,
     socketHeight,
     segments,
   });
 
   const socket = subtract(
-    translate([0, 0, -(socketHeight / 2 - jointInsertTolerance)], socketBody),
-    ballTolerance,
+    translate([0, 0, -(socketHeight / 2 - ballPressFitTolerance)], socketBody),
+    socketClearanceHole,
   );
 
-  return [socket, ball];
+  return [socket, fidgetBall];
 }

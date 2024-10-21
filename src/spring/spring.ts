@@ -5,8 +5,14 @@ import { rotate, translate } from "@jscad/modeling/src/operations/transforms";
 import { Vec2 } from "@jscad/modeling/src/maths/types";
 import { intersect, union } from "@jscad/modeling/src/operations/booleans";
 
-export function spring({ segments = 10, size = [20, 20, 30], wireSize = 1 }) {
+export function spring({
+  segments = 10,
+  size = [20, 20, 30],
+  wireSize = 1,
+  center = [0, 0, 0],
+}) {
   const [width, depth, length] = size;
+  const [centerX, centerY, centerZ] = center;
 
   const bottomBase = cuboid({
     size: [width, depth, wireSize],
@@ -53,5 +59,8 @@ export function spring({ segments = 10, size = [20, 20, 30], wireSize = 1 }) {
     ),
   );
 
-  return intersect(springBody, boundingCuboid);
+  return translate(
+    [centerX, centerY, centerZ - length / 2],
+    intersect(springBody, boundingCuboid),
+  );
 }

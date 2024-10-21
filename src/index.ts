@@ -11,8 +11,8 @@ import {
 } from "@jscad/modeling/src/operations/extrusions";
 import { path2 } from "@jscad/modeling/src/geometries";
 
-// export { main } from "./fidget";
-export { main } from "./spring";
+export { main } from "./fidget";
+// export { main } from "./spring";
 
 const factor = 8;
 
