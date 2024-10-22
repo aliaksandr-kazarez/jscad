@@ -1,6 +1,6 @@
 import { subtract } from "@jscad/modeling/src/operations/booleans";
 import { cube, cuboid, cylinder, sphere } from "@jscad/modeling/src/primitives";
-import { joint } from "./fidget/joint";
+import { assembly } from "./fidget/assembly";
 import { rotate, translate } from "@jscad/modeling/src/operations/transforms";
 import { main as gear } from "./gear";
 import {

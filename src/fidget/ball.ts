@@ -3,18 +3,38 @@ import { cube, cuboid, cylinder, sphere } from "@jscad/modeling/src/primitives";
 import { cap } from "./cap";
 import { translate } from "@jscad/modeling/src/operations/transforms";
 import { spring } from "../spring";
-import {
-  CLEARANCE_LOOSE,
-  CLEARANCE_NORMAL,
-  CLEARANCE_TIGHT,
-} from "../constants";
+import { Clearance } from "../constants";
 import { Geom3 } from "@jscad/modeling/src/geometries/types";
+
+export function button({
+  buttonRadius,
+  minimumWallSize,
+  buttonShaftHeight,
+  center: [dx, dy, dz] = [0, 0, 0],
+  segments,
+}) {
+  const buttonBody = union(
+    cylinder({
+      radius: buttonRadius,
+      height: buttonShaftHeight,
+      center: [dx, dy, dz],
+      segments,
+    }),
+    cap({
+      radius: buttonRadius,
+      wallSize: minimumWallSize,
+      center: [dx, dy, dz + buttonShaftHeight / 2],
+    }),
+  );
+
+  return buttonBody;
+}
 
 export function ball({
   radius,
   buttonShaftHeight = 6,
-  buttonTolerance = CLEARANCE_TIGHT,
-  springTolerance = CLEARANCE_LOOSE,
+  buttonTolerance = Clearance.Tight,
+  springTolerance = Clearance.Loose,
   minimumWallSize = 1,
   segments,
 }): Geom3[] {
@@ -35,23 +55,16 @@ export function ball({
   });
 
   const buttonRadius = radius / 2;
-  const buttonBody = union(
-    subtract(
-      cylinder({
-        radius: buttonRadius,
-        height: buttonShaftHeight,
-        center: [0, 0, radius - buttonShaftHeight / 2],
-        segments,
-      }),
-      springInsertCut,
-    ),
-    cap({
-      radius: buttonRadius,
-      wallSize: 1,
-      center: [0, 0, radius],
+  const buttonBody = subtract(
+    button({
+      buttonRadius,
+      minimumWallSize,
+      segments,
+      buttonShaftHeight,
+      center: [0, 0, radius - buttonShaftHeight / 2],
     }),
+    springInsertCut,
   );
-
   const buttonBodyPresses = translate([0, 0, -buttonShaftHeight], buttonBody);
 
   const buttonShaftCutHeight = buttonShaftHeight * 2;
