@@ -13,6 +13,7 @@ import { path2 } from "@jscad/modeling/src/geometries";
 
 export { main } from "./fidget";
 // export { main } from "./spring";
+// export { button as main } from "./fidget/ball";
 
 const factor = 8;
 

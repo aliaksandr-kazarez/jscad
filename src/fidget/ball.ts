@@ -1,33 +1,61 @@
 import { subtract, union } from "@jscad/modeling/src/operations/booleans";
-import { cube, cuboid, cylinder, sphere } from "@jscad/modeling/src/primitives";
+import {
+  cube,
+  cuboid,
+  cylinder,
+  cylinderElliptic,
+  sphere,
+} from "@jscad/modeling/src/primitives";
 import { cap } from "./cap";
-import { translate } from "@jscad/modeling/src/operations/transforms";
+import {
+  Vec,
+  rotateX,
+  translate,
+} from "@jscad/modeling/src/operations/transforms";
 import { spring } from "../spring";
 import { Clearance } from "../constants";
 import { Geom3 } from "@jscad/modeling/src/geometries/types";
 
 export function button({
-  buttonRadius,
-  minimumWallSize,
-  buttonShaftHeight,
-  center: [dx, dy, dz] = [0, 0, 0],
-  segments,
+  buttonRadius = 10,
+  minimumWallSize = 1,
+  buttonShaftHeight = 6,
+  center = [0, 0, 0],
+  segments = 100,
+  pressFitTolerance = 1,
 }) {
+  const lockSkirtHeight = pressFitTolerance;
+  const lockSkirt = cylinderElliptic({
+    height: lockSkirtHeight,
+    endRadius: [buttonRadius, buttonRadius],
+    startRadius: [
+      buttonRadius + pressFitTolerance / 2,
+      buttonRadius + pressFitTolerance / 2,
+    ],
+    segments,
+  });
   const buttonBody = union(
     cylinder({
       radius: buttonRadius,
       height: buttonShaftHeight,
-      center: [dx, dy, dz],
       segments,
     }),
+    translate(
+      [0, 0, -buttonShaftHeight / 2 + lockSkirtHeight * 1.5],
+      lockSkirt,
+    ),
+    translate(
+      [0, 0, -buttonShaftHeight / 2 + lockSkirtHeight / 2],
+      rotateX(Math.PI, lockSkirt),
+    ),
     cap({
       radius: buttonRadius,
       wallSize: minimumWallSize,
-      center: [dx, dy, dz + buttonShaftHeight / 2],
+      center: [0, 0, buttonShaftHeight / 2],
     }),
   );
 
-  return buttonBody;
+  return translate(center as Vec, buttonBody);
 }
 
 export function ball({
@@ -57,6 +85,7 @@ export function ball({
   const buttonRadius = radius / 2;
   const buttonBody = subtract(
     button({
+      pressFitTolerance: 1,
       buttonRadius,
       minimumWallSize,
       segments,
@@ -69,7 +98,7 @@ export function ball({
 
   const buttonShaftCutHeight = buttonShaftHeight * 2;
   const buttonShaftCut = cylinder({
-    radius: buttonRadius + buttonTolerance,
+    radius: buttonRadius + buttonTolerance + 0.5,
     height: buttonShaftCutHeight,
     center: [0, 0, radius + buttonShaftCutHeight / 2 - buttonShaftHeight * 2],
     segments,
@@ -85,5 +114,10 @@ export function ball({
     buttonShaftCut,
   );
 
-  return [ballBody, buttonBody, springInsertBody];
+  return [
+    // ballBody,
+    buttonBody,
+    // springInsertBody,
+    // buttonBodyPresses,
+  ];
 }
